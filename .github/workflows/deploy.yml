@@ -1,15 +1,25 @@
-name: HTML CSS CI
+name: HTML CSS CI & Deploy
 
-on: push
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  check:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: List files
-        run: ls
+        run: ls -la
 
       - name: Check index.html exists
         run: test -f index.html
@@ -17,5 +27,18 @@ jobs:
       - name: Check style.css exists
         run: test -f style.css
 
-      - name: CI Success
-        run: echo "HTML & CSS checks passed"
+      - name: CI checks passed
+        run: echo "HTML & CSS CI successful"
+
+      - name: Upload artifact for Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
