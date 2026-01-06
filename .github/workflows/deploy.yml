@@ -1,44 +1,21 @@
-name: HTML CSS CI & Deploy
+name: Deploy to EC2
 
 on:
   push:
     branches:
       - main
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: List files
-        run: ls -la
-
-      - name: Check index.html exists
-        run: test -f index.html
-
-      - name: Check style.css exists
-        run: test -f style.css
-
-      - name: CI checks passed
-        run: echo "HTML & CSS CI successful"
-
-      - name: Upload artifact for Pages
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-
   deploy:
-    needs: build
     runs-on: ubuntu-latest
-
     steps:
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /var/www/html/dummy-AWS
+            git pull origin main
+            sudo systemctl restart apache2
